@@ -54,21 +54,17 @@ def calculate_entropy(mask_logits):
     """
     Calculate pixel-wise entropy from mask logits.
     """
-    # Convert logits to probabilities
+
     probs = torch.sigmoid(mask_logits)
-    # Create mask for high confidence pixels (prob > 0.95)
     high_conf_mask = probs > 0.95
 
-    # Calculate binary entropy: -[p*log(p) + (1-p)*log(1-p)]
-    # Add small epsilon to avoid log(0)
     eps = 1e-7
     probs_clipped = torch.clamp(probs, eps, 1 - eps)
 
-    # Binary entropy formula
+
     entropy = -(probs_clipped * torch.log(probs_clipped) +
                 (1 - probs_clipped) * torch.log(1 - probs_clipped))
 
-    # Zero out entropy for pixels below threshold
     entropy = entropy * high_conf_mask.float()
 
     total_entropy = entropy.sum(dim=(-2, -1))
