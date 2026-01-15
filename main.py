@@ -8,9 +8,7 @@ from model import MedSAM_TTA
 
 def load_image(image_path, target_size=(1024, 1024)):
     img = plt.imread(image_path)[:, :, :3]
-    # Convert to torch tensor and reorder to (1, 3, H, W)
     img_tensor = torch.from_numpy(img).permute(2, 0, 1).unsqueeze(0).float()
-    # Resize to target size
     img_tensor = F.interpolate(img_tensor, size=target_size, mode='bilinear', align_corners=False)
     return img_tensor
 
@@ -33,13 +31,9 @@ def main(args):
     image = load_image(args.image_path)
     image = image.to(device)
 
-    # Define Box Prompt (Coordinate parsing)
-    # Expecting args.box as "x1,y1,x2,y2"
     coords = list(map(int, args.box.split(',')))
     box = torch.tensor([[coords[0], coords[1]], [coords[2], coords[3]]], dtype=torch.int32)
 
-    # Run Inference
-    print("Starting Test-Time Adaptation...")
     masks, ious, output_mask = model(
         image,
         box=box
@@ -48,9 +42,7 @@ def main(args):
     print(f"Output masks shape: {masks.shape}")
     print(f"IOU predictions: {ious}")
 
-    # Simple visualization or save logic could be added here
     if args.output:
-        # Save the binary mask sum
         torch.save(output_mask, args.output)
         print(f"Result saved to {args.output}")
 
